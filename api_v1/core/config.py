@@ -2,7 +2,7 @@ from pydantic import BaseSettings, Field
 
 class Settings(BaseSettings):
     DATABASE_URL: str
-
+    SECRET: str
 
     class Config:
         env_file = ".env"

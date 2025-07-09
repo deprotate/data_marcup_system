@@ -1,53 +1,76 @@
-# app/api/tasks.py
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
-from app.schemas.task_schemas import NextTaskResponse, SubmitTaskRequest, SubmitTaskResponse
-from app.crud.tasks import (
-    pick_next_assignment,
-    store_submission,
-    generate_ai_suggestion,
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..core.DBHelper import db_helper
+from .schemas import TaskCreate, TaskRead
+from . import crud
+from ...api_v1.users.auth import fastapi_users
+from ..core.models.users import User
+
+router = APIRouter(
+    prefix="/tasks",
+    tags=["tasks"],
 )
-from app.core.auth import get_current_user
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
-
-@router.get("/next", response_model=NextTaskResponse)
-async def get_next_task(user = Depends(get_current_user)):
-    """
-    Берём из очереди next assignment.
-    Сразу рассчитываем ai_suggestion (медленно) или возвращаем None и запускаем background.
-    """
-    assignment = await pick_next_assignment(user.id)
-    if not assignment:
-        raise HTTPException(404, "Задания закончились")
-    # вариант: сразу получить подсказку синхронно
-    ai_text = await generate_ai_suggestion(assignment.task.payload)
-    return NextTaskResponse(
-        assignment_id=assignment.id,
-        task_id=assignment.task.id,
-        type=assignment.task.type.name,
-        payload=assignment.task.payload,
-        ai_suggestion=ai_text,
-    )
-
-@router.post("/{assignment_id}/submit", response_model=SubmitTaskResponse)
-async def submit_task(
-    assignment_id: UUID,
-    body: SubmitTaskRequest,
-    background_tasks: BackgroundTasks,
-    user = Depends(get_current_user),
+@router.get("/", response_model=list[TaskRead])
+async def list_tasks(
+    user: User = Depends(fastapi_users.current_user()),
+    db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
-    Сохраняем ответ, помечаем задание как done/skipped.
-    В background можно сразу запустить recompute AI для следующего задания.
+    Вернуть все задачи, созданные текущим пользователем.
     """
-    submission = await store_submission(assignment_id, user.id, body)
-    # опционально – в фоне запускаем предзапуск AI для следующего
-    background_tasks.add_task(_warmup_next_ai, submission.task_id)
-    # можно сразу вернуть следующую команду
-    next_asg = await pick_next_assignment(user.id)
-    next_resp = (await get_next_task(user)) if next_asg else None
-    return SubmitTaskResponse(status="ok", next_assignment=next_resp)
+    tasks = await crud.get_tasks_by_owner(db, owner_id=user.id)
+    return tasks
 
-async def _warmup_next_ai(task_id: UUID):
-    # здесь просто вызываем нашу функцию ИИ без await, чтобы кешировать модель
-    await generate_ai_suggestion_by_task_id(task_id)
+@router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
+async def create_task(
+    data: TaskCreate,
+    user: User = Depends(fastapi_users.current_user()),
+    db: AsyncSession = Depends(db_helper.session_dependency),
+):
+    """
+    Создать задачу по шаблону template_name, с контентом content,
+    и привязать к текущему пользователю.
+    """
+    try:
+        task = await crud.create_task(
+            db,
+            owner_id=user.id,
+            template_name=data.template_name,
+            content=data.content,
+        )
+    except ValueError as e:
+        # например, если шаблон не найден или content не валиден
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    return task
+
+@router.get("/{task_id}", response_model=TaskRead)
+async def get_task(
+    task_id: int,
+    user: User = Depends(fastapi_users.current_user()),
+    db: AsyncSession = Depends(db_helper.session_dependency),
+):
+    """
+    Вернуть задачу по ID, только если она принадлежит текущему пользователю.
+    """
+    task = await crud.get_task_by_id(db, task_id=task_id, owner_id=user.id)
+    if not task:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Задача не найдена")
+    return task
+
+
+
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_task(
+    task_id: int,
+    user: User = Depends(fastapi_users.current_user()),
+    db: AsyncSession = Depends(db_helper.session_dependency),
+):
+    """
+    Удалить задачу, если она принадлежит текущему пользователю.
+    """
+    deleted = await crud.delete_task_by_owner(db, task_id=task_id, owner_id=user.id)
+    if not deleted:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Задача не найдена")

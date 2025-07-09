@@ -4,6 +4,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from api_v1.core.models.Base import Base
+from api_v1.core.models.assignments import Assignment
+from api_v1.core.models.task_templates import TaskTemplate
+from api_v1.core.models.users import User
 
 
 class Task(Base):
@@ -23,5 +26,8 @@ class Task(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    template:       Mapped["TaskTemplate"] = relationship(back_populates="tasks", lazy="joined")
-    assignments:    Mapped[list["Assignment"]] = relationship(back_populates="task")
+    template:       Mapped[TaskTemplate] = relationship(back_populates="tasks", lazy="joined")
+    assignments:    Mapped[list[Assignment]] = relationship(back_populates="task")
+
+    created_by_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    created_by: Mapped[User] = relationship(back_populates="tasks")

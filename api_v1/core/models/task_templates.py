@@ -1,8 +1,10 @@
-from sqlalchemy import String, Text
+from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from api_v1.core.models.Base import Base
+from api_v1.core.models.tasks import Task
+from api_v1.core.models.users import User
 
 
 class TaskTemplate(Base):
@@ -20,4 +22,7 @@ class TaskTemplate(Base):
     options: Mapped[list] = mapped_column(JSONB, nullable=False)
 
     # связь к задачам
-    tasks: Mapped[list["Task"]] = relationship(back_populates="template")
+    tasks: Mapped[list[Task]] = relationship(back_populates="template")
+
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    owner: Mapped[User] = relationship(back_populates="templates")
