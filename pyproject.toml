@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "data-marcup-system"
+version = "0.1.0"
+description = ""
+authors = ["Deprotate <gribozui.top@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastapi = "^0.116.0"
+uvicorn = "^0.35.0"
+sqlalchemy = "^2.0.41"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
