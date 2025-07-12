@@ -12,6 +12,7 @@ class Assignment(Base):
       - status: new/in_progress/done/skipped
       - ai_suggestion: подсказываем моделью
     """
+    id: Mapped[int] = mapped_column(primary_key=True)
     task_id: Mapped[int] = mapped_column(
         ForeignKey("tasks.id", ondelete="CASCADE"),
         nullable=False

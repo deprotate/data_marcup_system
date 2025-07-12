@@ -13,6 +13,7 @@ class Annotation(Base):
       - custom_answer: текст, если вариант type="custom"
       - comment
     """
+    id: Mapped[int] = mapped_column(primary_key=True)
     assignment_id: Mapped[int] = mapped_column(
         ForeignKey("assignments.id", ondelete="CASCADE"),
         nullable=False

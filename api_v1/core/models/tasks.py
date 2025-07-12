@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy import ForeignKey, DateTime, func
+
+from sqlalchemy import ForeignKey, DateTime, func, UUID
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -13,13 +14,14 @@ class Task(Base):
       - content: готовый JSON по content_schema шаблона
       - created_by_id: внешний user_id
     """
+    id: Mapped[int] = mapped_column(primary_key=True)
     tid: Mapped[int] = mapped_column(primary_key=True, index=True)
     template_id: Mapped[int] = mapped_column(
-        ForeignKey("task_templates.id", ondelete="CASCADE"),
+        ForeignKey("tasktemplates.id", ondelete="CASCADE"),
         nullable=False
     )
     content: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    created_by_id: Mapped[int | None] = mapped_column(
+    created_by_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )
