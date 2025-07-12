@@ -1,10 +1,10 @@
 from sqlalchemy import String, DateTime, func
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from api_v1.core.models.Base import Base
+from api_v1.core.models.Base import AuthBase
 
 
-class User(SQLAlchemyBaseUserTableUUID, Base):
+class User(SQLAlchemyBaseUserTableUUID, AuthBase):
     username: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     # email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     # hashed_password: Mapped[str] = mapped_column(String, nullable=False)

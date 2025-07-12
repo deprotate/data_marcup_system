@@ -1,5 +1,6 @@
+from uuid import UUID
 
-from sqlalchemy import String, Text, ForeignKey, UUID
+from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -16,7 +17,6 @@ class TaskTemplate(Base):
       - content_schema: JSON‑схема для основного блока (текст, запрос + выдача или картинки)
       - options: список вариантов ответа [{ "label": str, "type": "fixed"|"custom" }]
     """
-    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)

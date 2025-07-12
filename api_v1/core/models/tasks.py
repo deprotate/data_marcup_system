@@ -1,6 +1,7 @@
 from datetime import datetime
+from uuid import UUID
 
-from sqlalchemy import ForeignKey, DateTime, func, UUID
+from sqlalchemy import ForeignKey, DateTime, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,7 +15,6 @@ class Task(Base):
       - content: готовый JSON по content_schema шаблона
       - created_by_id: внешний user_id
     """
-    id: Mapped[int] = mapped_column(primary_key=True)
     tid: Mapped[int] = mapped_column(primary_key=True, index=True)
     template_id: Mapped[int] = mapped_column(
         ForeignKey("tasktemplates.id", ondelete="CASCADE"),
