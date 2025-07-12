@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi_users import fastapi_users
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.DBHelper import db_helper
@@ -7,6 +7,7 @@ from ..core.models.task_templates import TaskTemplate
 from .schemas import TaskTemplateCreate, TaskTemplateRead
 from . import crud
 from ..core.models.users import User
+from ..users.auth import app_users
 
 router = APIRouter(
     prefix="/task_templates",
@@ -16,7 +17,7 @@ router = APIRouter(
 
 @router.get("/", response_model=list[TaskTemplateRead])
 async def list_templates(
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
@@ -30,7 +31,7 @@ async def list_templates(
 @router.post("/", response_model=TaskTemplateRead, status_code=status.HTTP_201_CREATED)
 async def create_template(
     data: TaskTemplateCreate,
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
@@ -55,7 +56,7 @@ async def create_template(
 @router.get("/{template_name}", response_model=TaskTemplateRead)
 async def get_template(
     template_name: str,
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
@@ -70,7 +71,7 @@ async def get_template(
 @router.delete("/{template_name}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_template(
     template_name: str,
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     deleted = await crud.delete_template(db, owner_id=user.id, name=template_name)

@@ -3,7 +3,6 @@ from sqlalchemy import ForeignKey, DateTime, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from api_v1.core.models.Base import Base
-from api_v1.core.models.assignments import Assignment
 
 
 class Annotation(Base):
@@ -23,4 +22,4 @@ class Annotation(Base):
     comment: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    assignment: Mapped[Assignment] = relationship(back_populates="annotations")
+    assignment: Mapped['Assignment'] = relationship(back_populates="annotations")

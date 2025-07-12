@@ -11,6 +11,10 @@ fastapi = "^0.116.0"
 uvicorn = "^0.35.0"
 sqlalchemy = "^2.0.41"
 fastapi-users = {extras = ["sqlalchemy2"], version = "^14.0.1"}
+asyncpg = "^0.30.0"
+bcrypt = "^4.3.0"
+pydantic-settings = "^2.10.1"
+fastapi-users-db-sqlalchemy = "^7.0.0"
 
 
 [build-system]

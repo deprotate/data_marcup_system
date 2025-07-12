@@ -3,8 +3,6 @@ from sqlalchemy import ForeignKey, DateTime, Enum, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from api_v1.core.models.Base import Base
-from api_v1.core.models.annotations import Annotation
-from api_v1.core.models.tasks import Task
 
 
 class Assignment(Base):
@@ -27,5 +25,5 @@ class Assignment(Base):
     assigned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     completed_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
-    task: Mapped[Task] = relationship(back_populates="assignments")
-    annotations: Mapped[list[Annotation]] = relationship(back_populates="assignment")
+    task: Mapped['Task'] = relationship(back_populates="assignments")
+    annotations: Mapped[list['Annotation']] = relationship(back_populates="assignment")

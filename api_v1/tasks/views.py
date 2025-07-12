@@ -4,8 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.DBHelper import db_helper
 from .schemas import TaskCreate, TaskRead
 from . import crud
-from ...api_v1.users.auth import fastapi_users
 from ..core.models.users import User
+from ..users.auth import app_users
 
 router = APIRouter(
     prefix="/tasks",
@@ -14,7 +14,7 @@ router = APIRouter(
 
 @router.get("/", response_model=list[TaskRead])
 async def list_tasks(
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
@@ -26,7 +26,7 @@ async def list_tasks(
 @router.post("/", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
 async def create_task(
     data: TaskCreate,
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
@@ -49,7 +49,7 @@ async def create_task(
 @router.get("/{task_id}", response_model=TaskRead)
 async def get_task(
     task_id: int,
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """
@@ -65,7 +65,7 @@ async def get_task(
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(
     task_id: int,
-    user: User = Depends(fastapi_users.current_user()),
+    user: User = Depends(app_users.current_user()),
     db: AsyncSession = Depends(db_helper.session_dependency),
 ):
     """

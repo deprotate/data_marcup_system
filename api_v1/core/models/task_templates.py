@@ -21,8 +21,10 @@ class TaskTemplate(Base):
     content_schema: Mapped[dict] = mapped_column(JSONB, nullable=False)
     options: Mapped[list] = mapped_column(JSONB, nullable=False)
 
-    # связь к задачам
-    tasks: Mapped[list[Task]] = relationship(back_populates="template")
 
-    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    owner: Mapped[User] = relationship(back_populates="templates")
+    owner_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    owner: Mapped["User"] = relationship(back_populates="templates")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="template")
