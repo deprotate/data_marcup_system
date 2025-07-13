@@ -28,5 +28,9 @@ class TaskTemplate(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
-    owner: Mapped["User"] = relationship(back_populates="templates")
+    owner: Mapped["User"] = relationship(
+        back_populates="templates",
+        foreign_keys=[owner_id],
+        lazy="joined",
+    )
     tasks: Mapped[list["Task"]] = relationship(back_populates="template")
